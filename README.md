@@ -1,7 +1,7 @@
 # E-Toll Collection System (ETCS) Database
 
 ![SQL Server](https://img.shields.io/badge/Database-SQL%20Server-CC2927?style=flat&logo=microsoft-sql-server)
-![Status](![Status](https://img.shields.io/badge/Status-Work%20in%20Progress-blue))
+![Status](https://img.shields.io/badge/Status-Work%20in%20Progress-blue)
 
 A comprehensive Relational Database Management System (RDBMS) designed to manage the operations of an Electronic Toll Collection System. This project was developed using **Microsoft SQL Server (T-SQL)** and demonstrates advanced database design principles, normalization, and server-side logic.
 
