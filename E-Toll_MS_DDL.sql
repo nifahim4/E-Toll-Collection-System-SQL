@@ -38,7 +38,7 @@ CREATE DATABASE ETCS
 ON PRIMARY
 (
     NAME = 'ETCS_Data',
-    FILENAME = 'F:\IDB\M_02_SQLserver\HOMEWORK\project\ETCS_Data.mdf',
+    FILENAME = 'E:\Nakibul Islam Fahim\sql_project\project\ETCS_Data.mdf',
     SIZE = 25MB,
     MAXSIZE = 100MB,
     FILEGROWTH = 5%
@@ -46,7 +46,7 @@ ON PRIMARY
 LOG ON
 (
     NAME = 'ETCS_Log',
-    FILENAME = 'F:\IDB\M_02_SQLserver\HOMEWORK\project\ETCS_Log.ldf',
+    FILENAME = 'E:\Nakibul Islam Fahim\sql_project\project\ETCS_Log.ldf',
     SIZE = 10MB,
     MAXSIZE = 50MB,
     FILEGROWTH = 1MB
@@ -180,7 +180,7 @@ CREATE TABLE Transactions (
     DriverID INT FOREIGN KEY REFERENCES Driver(DriverID),
     PlazaID INT FOREIGN KEY REFERENCES Plaza(PlazaID),
     TicketCode INT FOREIGN KEY REFERENCES TollTicket(TicketCode),
-    AmountPaid DECIMAL(10, 2),
+    AmountPaid MONEY,
     PaymentTypeID INT FOREIGN KEY REFERENCES PaymentType(PaymentTypeID),
     CONSTRAINT CK_Transaction_Amount CHECK (AmountPaid >= 0)
 );
@@ -282,11 +282,13 @@ GO
 
 
 -- Clustered Index
+
 -- (Note: Primary Keys automatically create Clustered Indexes, but here is explicit syntax)
 CREATE CLUSTERED INDEX IX_Clustered_DriverID ON Driver(DriverID);
 GO
 
 -- Nonclustered Index
+
 CREATE NONCLUSTERED INDEX IX_Transaction_Date 
 ON Transactions(TransactionDateTime);
 GO
@@ -311,6 +313,8 @@ CREATE SEQUENCE seq_InvoiceNum
 GO
 
 --============== ALTER SEQUENCE ============--
+
+
 ALTER SEQUENCE seq_InvoiceNum
     RESTART WITH 2000;
 GO
@@ -383,6 +387,7 @@ GO
 							 STORED PROCEDURE
 ==========================================================================
 */
+
 --============== STORED PROCEDURE for insert data using parameter ============--
 
 
@@ -507,6 +512,8 @@ END
 GO
 
 --============== ALTER FUNCTION ============--
+
+
 GO
 ALTER FUNCTION fn_CalculateTax(@Amount DECIMAL(10,2))
 RETURNS DECIMAL(10,2)
