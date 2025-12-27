@@ -85,7 +85,11 @@ INSERT INTO Location (LocationName, Latitude, Longitude, EntryPoint, ExitPoint)
 VALUES 
 ('Meghna Bridge', 23.6050, 90.6100, 'Dhaka', 'Chittagong'),
 ('Padma Bridge', 23.4444, 90.2555, 'Mawa', 'Janjira'),
-('Jamuna Bridge', 24.3990, 89.7780, 'Tangail', 'Sirajganj');
+('Jamuna Bridge', 24.3990, 89.7780, 'Tangail', 'Sirajganj'),
+('Dhaka Elevated Expressway', 23.8103, 90.4125, 'Airport', 'Gazipur'),
+('Karnaphuli Tunnel', 22.3569, 91.7832, 'Chittagong', 'Coxs Bazar'),
+('Jatir Pita Hazrat Ibrahim Expressway', 23.8103, 90.4125, 'Dhaka', 'Mawa'),
+('Lalbagh Fort Area', 23.7161, 90.3944, 'Old Dhaka', 'New Market');
 GO
 
 -- 5. HR.Employees
@@ -106,7 +110,8 @@ GO
 INSERT INTO Plaza VALUES 
 ('Meghna Toll Plaza', 1, 1, 1),
 ('Padma Toll Plaza', 2, 1, 1),
-('Jamuna Toll Plaza', 3, 1, 1);
+('Jamuna Toll Plaza', 3, 1, 1),
+('Dhaka Elevated Expressway Plaza', 1, 2, 0);
 GO
 
 -- 7. Driver (Skipping ID as it is Identity)
@@ -134,7 +139,7 @@ VALUES
 ('BARISAL-METRO-BA-66', 6, 'Ford Explorer', 'Black', 6),
 ('SYLHET-METRO-SA-77', 7, 'Nissan Van', 'Silver', 7),
 ('COMILLA-METRO-CA-88', 8, 'Mitsubishi Pickup', 'Grey', 8),
-('CHITTAGONG-METRO-CHA-99', 9, 'Toyota CNG', 'White', 9),
+('CHITTAGONG-M-CHA-99', 9, 'Toyota CNG', 'White', 9),
 ('DHAKA-METRO-GA-99', 2, 'Honda Civic', 'Black', 1);
 GO
 
@@ -161,8 +166,26 @@ VALUES
 (2, 2, 4.0),
 (3, 1, 5.0),
 (3, 2, 5.0),
-(3, 3, 5.0);
+(3, 3, 5.0),
+(4, 1, 3.0),
+(4, 2, 3.0);
 GO
+
+-- 11. Transactions
+INSERT INTO Transactions (VehicleRegNo, DriverID, PlazaID, TicketCode, AmountPaid, PaymentTypeID)
+VALUES 
+('DHAKA-METRO-KA-11', 1, 1, 2, 500.00, 1),
+('CHATTO-METRO-GHA-22', 2, 2, 4, 1500.00, 2),
+('DHAKA-METRO-HA-33', 3, 1, 1, 100.00, 3),
+('KHULNA-METRO-TA-44', 4, 3, 3, 1000.00, 1),
+('RAJSHAHI-METRO-PA-55', 5, 2, 5, 2000.00, 4),
+('BARISAL-METRO-BA-66', 6, 4, 6, 1800.00, 2),
+('SYLHET-METRO-SA-77', 7, 1, 7, 1600.00, 1),
+('COMILLA-METRO-CA-88', 8, 3, 8, 1700.00, 3),
+('CHITTAGONG-M-CHA-99', 9, 2, 9, 900.00, 1),
+('DHAKA-METRO-GA-99', 1, 4, 2, 500.00, 4);
+GO
+
 
 /*
 ==============================  SECTION 02  ==============================
@@ -171,17 +194,18 @@ GO
 */
 
 -- Using the existing SP from DDL
-EXEC sp_InsertVehicle 'DHAKA-METRO-GA-99', 2, 'Honda Civic', 'Black', 1;
+
+EXEC sp_InsertVehicle 'DHAKA-METRO-NA-01', 2, 'Honda City', 'Silver', 1;
 GO
 
 
 --============== 2.1 INSERT DATA THROUGH STORED PROCEDURE WITH AN OUTPUT PARAMETER ============--
 
--- Note: Ensure sp_InsertPaymentTypeWithID is created (See Part 1 of instructions)
+-- Note: Ensure sp_InsertPaymentTypeWithID is created
+
 DECLARE @PayID INT;
 
 EXEC sp_InsertPaymentTypeWithID 'Crypto', @PayID OUTPUT;
-GO
 
 PRINT 'New Payment Type ID is: ' + CAST(@PayID AS VARCHAR);
 GO
@@ -192,14 +216,14 @@ GO
 -- Inserting into Transactions manually using the Sequence for a custom receipt number or just logging it
 -- Assuming we want to use the sequence for an Invoice Number simulation in a temp variable
 
+GO
+
 DECLARE @InvoiceNum INT;
 
 SET @InvoiceNum = NEXT VALUE FOR seq_InvoiceNum;
-GO
 
 INSERT INTO Transactions (VehicleRegNo, DriverID, PlazaID, TicketCode, AmountPaid, PaymentTypeID)
 VALUES ('DHAKA-METRO-KA-11', 1, 1, 2, 500.00, 1);
-GO
 
 PRINT 'Transaction Logged with Simulated Invoice #: ' + CAST(@InvoiceNum AS VARCHAR);
 GO
@@ -222,9 +246,9 @@ GO
 
 -- Deleting 'Security Guard' designation (ID 3)
 -- Note: Ensure no employees are assigned to this ID before deleting to avoid FK conflicts
-EXEC sp_DeleteDesignation 3;
-GO
 
+EXEC sp_DeleteDesignation 6;
+GO
 
 --============== 3.3 STORED PROCEDURE WITH TRY CATCH AND RAISE ERROR ============--
 
@@ -257,8 +281,8 @@ GO
 -- Updates the underlying Plaza table
 
 UPDATE v_PlazaInfo
-SET PlazaName = 'Padma Multipurpose Bridge Plaza'
-WHERE PlazaID = 2;
+SET PlazaName = 'Dhaka Elevated Expressway Plaza'
+WHERE PlazaID = 4;
 GO
 
 
@@ -267,9 +291,8 @@ GO
 -- This will delete from the underlying Plaza table
 
 DELETE FROM v_PlazaInfo
-WHERE PlazaID = 3;
+WHERE PlazaID = 6;
 GO
-
 
 /*
 ==============================  SECTION 05  ==============================
@@ -305,7 +328,7 @@ GO
 
 -- Testing trg_AfterPlazaInsert
 
-INSERT INTO Plaza (PlazaName, LocationID, ManagerID) VALUES ('Rupsha Bridge Plaza', 1, 2);
+INSERT INTO Plaza (PlazaName, LocationID, ManagerID) VALUES ('Jatir Pita Hazrat Ibrahim Expressway', 1, 2);
 GO
 
 
@@ -656,12 +679,14 @@ GO
 
 --============== 7.31 GOTO ============--
 
-DECLARE @Val INT = 1;
-IF @Val = 1 GOTO JumpLabel;
 GO
 
+DECLARE @Val INT = 1;
+IF @Val = 1 GOTO JumpLabel;
+
+
 PRINT 'This will be skipped';
-GO
+
 
 JumpLabel:
 PRINT 'Jumped to Label';

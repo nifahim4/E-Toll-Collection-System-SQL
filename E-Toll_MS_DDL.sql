@@ -31,6 +31,9 @@ USE master;
 GO
 
 IF DB_ID('ETCS') IS NOT NULL
+ALTER DATABASE ETCS 
+SET SINGLE_USER 
+WITH ROLLBACK IMMEDIATE;
 DROP DATABASE ETCS;
 GO
 
@@ -344,6 +347,7 @@ GO
 CREATE VIEW v_DriverTransactionHistory
 AS
 SELECT 
+    t.TransactionID,
     d.DriverID,
     d.FirstName + ' ' + d.LastName AS DriverName,
     t.VehicleRegNo,
