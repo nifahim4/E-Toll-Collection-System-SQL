@@ -410,6 +410,7 @@ GO
 SELECT * FROM Driver
 WHERE FirstName LIKE 'R%' 
 AND DriverID IN (1, 3);
+GO
 
 SELECT * FROM HR.Employees WHERE LastName IS NOT NULL;
 GO
