@@ -38,7 +38,7 @@ CREATE DATABASE ETCS
 ON PRIMARY
 (
     NAME = 'ETCS_Data',
-    FILENAME = 'E:\Nakibul Islam Fahim\sql_project\project\ETCS_Data.mdf',
+    FILENAME = 'F:\IDB\M_02_SQLserver\ETCS\ETCS_Data.mdf',
     SIZE = 25MB,
     MAXSIZE = 100MB,
     FILEGROWTH = 5%
@@ -46,7 +46,7 @@ ON PRIMARY
 LOG ON
 (
     NAME = 'ETCS_Log',
-    FILENAME = 'E:\Nakibul Islam Fahim\sql_project\project\ETCS_Log.ldf',
+    FILENAME = 'F:\IDB\M_02_SQLserver\ETCS\ETCS_Log.ldf',
     SIZE = 10MB,
     MAXSIZE = 50MB,
     FILEGROWTH = 1MB
@@ -390,6 +390,7 @@ GO
 
 --============== STORED PROCEDURE for insert data using parameter ============--
 
+-- Insert a new Vehicle record
 
 GO
 CREATE PROCEDURE sp_InsertVehicle
@@ -402,6 +403,43 @@ AS
 BEGIN
     INSERT INTO Vehicles (VehicleRegNo, VehicleTypeID, Model, Color, DriverID)
     VALUES (@RegNo, @TypeID, @Model, @Color, @DriverID)
+END
+GO
+
+--============== STORED PROCEDURE with OUTPUT parameter ============--
+
+CREATE PROCEDURE sp_InsertPaymentTypeWithID
+    @TypeName VARCHAR(50),
+    @NewID INT OUTPUT
+AS
+BEGIN
+    INSERT INTO PaymentType(TypeName)
+    VALUES (@TypeName);
+
+    SET @NewID = SCOPE_IDENTITY();
+END
+GO
+
+--============== STORED PROCEDURE with TRY CATCH ============--
+
+CREATE PROCEDURE sp_InsertDesignationSafe
+    @DesignationName VARCHAR(50)
+AS
+BEGIN
+    BEGIN TRY
+        IF EXISTS(SELECT 1 FROM Designation WHERE DesignationName = @DesignationName)
+        BEGIN
+            RAISERROR('Designation already exists.', 16, 1);
+        END
+
+        INSERT INTO Designation(DesignationName)
+        VALUES (@DesignationName);
+        
+        PRINT 'Designation inserted successfully.';
+    END TRY
+    BEGIN CATCH
+        PRINT 'Error occurred: ' + ERROR_MESSAGE();
+    END CATCH
 END
 GO
 
