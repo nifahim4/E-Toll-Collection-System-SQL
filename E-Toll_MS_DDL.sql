@@ -160,7 +160,7 @@ CREATE TABLE Vehicles (
     VehicleTypeID INT FOREIGN KEY REFERENCES VehicleType(VehicleTypeID),
     Model VARCHAR(50),
     Color VARCHAR(30),
-    DriverID INT -- FOREIGN KEY REFERENCES Driver(DriverID)
+    DriverID INT FOREIGN KEY REFERENCES Driver(DriverID)
 );
 GO
 
