@@ -140,21 +140,39 @@ VALUES
 ('SYLHET-METRO-SA-77', 7, 'Nissan Van', 'Silver', 7),
 ('COMILLA-METRO-CA-88', 8, 'Mitsubishi Pickup', 'Grey', 8),
 ('CHITTAGONG-M-CHA-99', 9, 'Toyota CNG', 'White', 9),
-('DHAKA-METRO-GA-99', 2, 'Honda Civic', 'Black', 1);
+('DHAKA-METRO-GA-99', 2, 'Honda Civic', 'Black', 1),
+('DHAKA-METRO-NA-01', 2, 'Honda City', 'Silver', 1),
+('CHATTO-METRO-DA-02', 4, 'Isuzu Truck', 'Blue', 2),
+('DHAKA-METRO-JA-03', 1, 'Suzuki Gixxer', 'Red', 3),
+('KHULNA-METRO-RA-04', 3, 'Mercedes Bus', 'White', 4),
+('RAJSHAHI-METRO-TA-05', 5, 'Ashok Leyland Trailer', 'Yellow', 5),
+('BARISAL-METRO-SA-06', 6, 'Jeep Grand Cherokee', 'Green', 6),
+('SYLHET-METRO-VA-07', 7, 'Toyota Hiace Van', 'Silver', 7),
+('COMILLA-METRO-PA-08', 8, 'Ford Ranger Pickup', 'Black', 8),
+('CHITTAGONG-M-DA-09', 9, 'Nissan CNG', 'Grey', 9),
+('DHAKA-METRO-RA-10', 2, 'Hyundai Elantra', 'Blue', 1),
+('CHATTO-METRO-BA-12', 4, 'Mahindra Truck', 'Red', 2),
+('DHAKA-METRO-SA-13', 1, 'KTM Duke', 'Orange', 3),
+('KHULNA-METRO-CA-14', 3, 'Scania Bus', 'White', 4),
+('RAJSHAHI-METRO-DA-15', 5, 'Tata Trailer', 'Yellow', 5),
+('BARISAL-METRO-TA-16', 6, 'Chevrolet Tahoe', 'Black', 6),
+('SYLHET-METRO-PA-17', 7, 'Nissan NV350 Van', 'Silver', 7),
+('COMILLA-METRO-SA-18', 8, 'Toyota Hilux Pickup', 'Grey', 8),
+('CHITTAGONG-M-FA-19', 9, 'Mitsubishi CNG', 'White', 9);
 GO
 
 -- 9. TollTicket
 INSERT INTO TollTicket (VehicleTypeID, Amount)
 VALUES 
-(1, 100.00), -- Motorcycle
-(2, 500.00), -- Private Car
-(3, 1000.00), -- Bus
-(4, 1500.00), -- Truck
-(5, 2000.00), -- Trailer
-(6, 1800.00), -- SUV
-(7, 1600.00), -- Van
-(8, 1700.00), -- Pickup
-(9, 900.00);  -- CNG
+(1, 100.00), 	-- Motorcycle
+(2, 500.00), 	-- Private Car
+(3, 1000.00), 	-- Bus
+(4, 1500.00), 	-- Truck
+(5, 2000.00), 	-- Trailer
+(6, 1800.00), 	-- SUV
+(7, 1600.00), 	-- Van
+(8, 1700.00), 	-- Pickup
+(9, 900.00);  	-- CNG
 GO
 
 -- 10. PlazaLanes
@@ -195,13 +213,11 @@ GO
 
 -- Using the existing SP from DDL
 
-EXEC sp_InsertVehicle 'DHAKA-METRO-NA-01', 2, 'Honda City', 'Silver', 1;
+EXEC sp_InsertVehicle 'DHAKA-METRO-SA-01', 2, 'TOYOTA RUSH', 'Black', 1;
 GO
 
 
 --============== 2.1 INSERT DATA THROUGH STORED PROCEDURE WITH AN OUTPUT PARAMETER ============--
-
--- Note: Ensure sp_InsertPaymentTypeWithID is created
 
 DECLARE @PayID INT;
 
@@ -210,6 +226,10 @@ EXEC sp_InsertPaymentTypeWithID 'Crypto', @PayID OUTPUT;
 PRINT 'New Payment Type ID is: ' + CAST(@PayID AS VARCHAR);
 GO
 
+--Inserting Transaction with Message Print
+
+EXEC sp_InsertTransactionMsg 'COMILLA-METRO-SA-18', 1, 1, 2, 300.00, 1;
+GO
 
 --============== 2.2 INSERT DATA USING SEQUENCE VALUE ============--
 
@@ -241,18 +261,20 @@ GO
 EXEC sp_UpdateDriverAddress 1, 'New Address: Uttara, Dhaka';
 GO
 
+EXEC sp_InsertUpadeteDeteleDriver 'UPDATE', 7, 'Mohogbot', 'Ali', 'DL-2001', '01999999999', 'Sylhet';
+GO
 
 --============== 3.2 DELETE DATA THROUGH STORED PROCEDURE ============--
 
 -- Deleting 'Security Guard' designation (ID 3)
--- Note: Ensure no employees are assigned to this ID before deleting to avoid FK conflicts
 
 EXEC sp_DeleteDesignation 6;
 GO
 
---============== 3.3 STORED PROCEDURE WITH TRY CATCH AND RAISE ERROR ============--
+EXEC sp_InsertUpadeteDeteleDriver 'DELETE', 8;
+GO
 
--- Note: Ensure sp_InsertDesignationSafe is created
+--============== 3.3 STORED PROCEDURE WITH TRY CATCH AND RAISE ERROR ============--
 
 EXEC sp_InsertDesignationSafe 'Plaza Manager'; -- Should trigger error (already exists)
 GO
@@ -260,6 +282,8 @@ GO
 EXEC sp_InsertDesignationSafe 'Auditor';       -- Should succeed
 GO
 
+EXEC sp_InsertUpadeteDeteleDriver 'SELECT', 2; -- Theres no SELECT Action, should handle gracefully
+GO
 
 /*
 ==============================  SECTION 04  ==============================
@@ -357,10 +381,10 @@ GO
 
 --============== 7.03 SELECT INTO > SAVE TRANSACTION LIST TO A NEW TEMPORARY TABLE ============--
 
-SELECT * INTO #TempTransactions FROM Transactions;
+SELECT * INTO TempTransactionsNEW FROM Transactions;
 GO
 
-SELECT * FROM #TempTransactions;
+SELECT * FROM TempTransactionsNEW;
 GO
 
 --============== 7.04 IMPLICIT JOIN WITH WHERE BY CLAUSE, ORDER BY CLAUSE ============--

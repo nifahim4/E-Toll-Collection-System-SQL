@@ -31,13 +31,14 @@ USE master;
 GO
 
 IF DB_ID('ETCS') IS NOT NULL
+BEGIN
+    ALTER DATABASE ETCS 
+    SET SINGLE_USER 
+    WITH ROLLBACK IMMEDIATE;
 
-ALTER DATABASE ETCS 
-SET SINGLE_USER 
-WITH ROLLBACK IMMEDIATE;
-DROP DATABASE ETCS;
-
-ELSE
+    DROP DATABASE ETCS;
+END
+GO
 
 CREATE DATABASE ETCS
 ON PRIMARY
@@ -155,11 +156,11 @@ GO
 
 
 CREATE TABLE Vehicles (
-    VehicleRegNo VARCHAR(20) PRIMARY KEY,
+    VehicleRegNo VARCHAR(30) PRIMARY KEY,
     VehicleTypeID INT FOREIGN KEY REFERENCES VehicleType(VehicleTypeID),
     Model VARCHAR(50),
     Color VARCHAR(30),
-    DriverID INT FOREIGN KEY REFERENCES Driver(DriverID)
+    DriverID INT -- FOREIGN KEY REFERENCES Driver(DriverID)
 );
 GO
 
@@ -181,7 +182,7 @@ GO
 CREATE TABLE Transactions (
     TransactionID INT IDENTITY(1,1) PRIMARY KEY  nonclustered,
     TransactionDateTime DATETIME DEFAULT GETDATE(),
-    VehicleRegNo VARCHAR(20) FOREIGN KEY REFERENCES Vehicles(VehicleRegNo),
+    VehicleRegNo VARCHAR(30) FOREIGN KEY REFERENCES Vehicles(VehicleRegNo),
     DriverID INT FOREIGN KEY REFERENCES Driver(DriverID),
     PlazaID INT FOREIGN KEY REFERENCES Plaza(PlazaID),
     TicketCode INT FOREIGN KEY REFERENCES TollTicket(TicketCode),
@@ -355,10 +356,12 @@ SELECT
     t.VehicleRegNo,
     p.PlazaName,
     t.TransactionDateTime,
+    tt.Amount,
     t.AmountPaid
 FROM Transactions t
 INNER JOIN Driver d ON t.DriverID = d.DriverID
-INNER JOIN Plaza p ON t.PlazaID = p.PlazaID;
+INNER JOIN Plaza p ON t.PlazaID = p.PlazaID
+INNER JOIN TollTicket tt ON t.TicketCode = tt.TicketCode;
 GO
 
 -- A VIEW to get total Profit
@@ -400,7 +403,7 @@ GO
 
 GO
 CREATE PROCEDURE sp_InsertVehicle
-    @RegNo VARCHAR(20),
+    @RegNo VARCHAR(30),
     @TypeID INT,
     @Model VARCHAR(50),
     @Color VARCHAR(30),
@@ -427,6 +430,31 @@ END
 GO
 
 --============== STORED PROCEDURE with TRY CATCH ============--
+
+-- Insert a new Transaction with error handling and Message Print
+
+CREATE PROCEDURE sp_InsertTransactionMsg
+    @VehicleRegNo VARCHAR(30),
+    @DriverID INT,
+    @PlazaID INT,
+    @TicketCode INT,
+    @AmountPaid MONEY,
+    @PaymentTypeID INT
+AS
+BEGIN
+    BEGIN TRY
+        INSERT INTO Transactions (VehicleRegNo, DriverID, PlazaID, TicketCode, AmountPaid, PaymentTypeID)
+        VALUES (@VehicleRegNo, @DriverID, @PlazaID, @TicketCode, @AmountPaid, @PaymentTypeID);
+
+        PRINT 'Transaction inserted successfully. Total Amount Paid: ' + CAST(@AmountPaid AS VARCHAR);
+    END TRY
+    BEGIN CATCH
+        PRINT 'Error occurred: ' + ERROR_MESSAGE();
+    END CATCH
+END
+GO
+
+--============== STORED PROCEDURE with validation ============--
 
 CREATE PROCEDURE sp_InsertDesignationSafe
     @DesignationName VARCHAR(50)
@@ -474,6 +502,64 @@ AS
 BEGIN
     DELETE FROM Designation
     WHERE DesignationID = @DesignationID
+END
+GO
+
+--============== STORED PROCEDURE with multiple actions (INSERT, UPDATE, DELETE) ============--
+
+GO
+CREATE PROCEDURE sp_InsertUpadeteDeteleDriver
+    @Action VARCHAR(10), -- 'INSERT', 'UPDATE', 'DELETE'
+    @DriverID INT = NULL,
+    @FirstName VARCHAR(50) = NULL,
+    @LastName VARCHAR(50) = NULL,
+    @LicenseNumber VARCHAR(50) = NULL,
+    @ContactNumber VARCHAR(20) = NULL,
+    @Address VARCHAR(300) = NULL
+AS
+BEGIN
+    IF @Action = 'INSERT'
+    BEGIN
+        INSERT INTO Driver (FirstName, LastName, LicenseNumber, ContactNumber, Address)
+        VALUES (@FirstName, @LastName, @LicenseNumber, @ContactNumber, @Address);
+    END
+    ELSE IF @Action = 'UPDATE'
+    BEGIN
+        UPDATE Driver
+        SET FirstName = @FirstName,
+            LastName = @LastName,
+            LicenseNumber = @LicenseNumber,
+            ContactNumber = @ContactNumber,
+            Address = @Address
+        WHERE DriverID = @DriverID;
+    END
+    ELSE IF @Action = 'DELETE'
+    BEGIN
+        DELETE FROM Driver
+        WHERE DriverID = @DriverID;
+    END
+    ELSE
+    BEGIN
+        RAISERROR('Invalid Action specified.', 16, 1);
+    END
+END
+GO
+
+--============== STORED PROCEDURE to Insert Transaction ============--
+
+
+GO
+CREATE PROCEDURE sp_InsertTransaction
+    @VehicleRegNo VARCHAR(30),
+    @DriverID INT,
+    @PlazaID INT,
+    @TicketCode INT,
+    @AmountPaid MONEY,
+    @PaymentTypeID INT
+AS
+BEGIN
+    INSERT INTO Transactions (VehicleRegNo, DriverID, PlazaID, TicketCode, AmountPaid, PaymentTypeID)
+    VALUES (@VehicleRegNo, @DriverID, @PlazaID, @TicketCode, @AmountPaid, @PaymentTypeID);
 END
 GO
 
@@ -576,8 +662,9 @@ GO
 */
 
 --============== AN AFTER/FOR TRIGGER FOR INSERT, UPDATE, DELETE ============--
--- Create an Audit Table first
-CREATE TABLE PlazaAudit (
+
+CREATE TABLE PlazaAudit 
+(
     LogID INT IDENTITY(1,1) PRIMARY KEY,
     AuditMessage VARCHAR(255),
     LogDate DATETIME DEFAULT GETDATE()
@@ -599,6 +686,24 @@ BEGIN
 END
 GO
 
+--============== DELETE FROM TRANSACTIONS ============--
+
+-- Trigger to log deletion of transactions
+
+CREATE TRIGGER trg_AfterTransactionDelete
+ON Transactions
+AFTER DELETE
+AS
+BEGIN
+
+    DECLARE @TransID INT;
+    SELECT @TransID = TransactionID FROM deleted;
+    
+    INSERT INTO PlazaAudit (AuditMessage)
+    VALUES ('Transaction Deleted: ID ' + CAST(@TransID AS VARCHAR));
+    
+END
+GO
 
 /*
 ==============================  SECTION 10  ==============================
@@ -632,5 +737,3 @@ BEGIN
     PRINT 'Transaction successfully recorded via View Trigger.';
 END
 GO
-
-
