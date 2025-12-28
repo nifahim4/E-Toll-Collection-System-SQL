@@ -3,56 +3,82 @@
 ![SQL Server](https://img.shields.io/badge/Database-SQL%20Server-CC2927?style=flat&logo=microsoft-sql-server)
 ![Status](https://img.shields.io/badge/Status-Work%20in%20Progress-blue)
 
-A comprehensive Relational Database Management System (RDBMS) designed to manage the operations of an Electronic Toll Collection System. This project was developed using **Microsoft SQL Server (T-SQL)** and demonstrates advanced database design principles, normalization, and server-side logic.
+A comprehensive Relational Database Management System (RDBMS) designed to manage the operations of an Electronic Toll Collection System. This project was developed using **Microsoft SQL Server 2022** and demonstrates advanced database design principles including schemas, encryption, triggers, and complex reporting views.
 
-## 📌 Project Overview
+## 📋 Project Information
 
-The ETCS database automates the core functions of toll plazas, including tracking vehicles, managing drivers, calculating toll fees based on vehicle types, and auditing transactions. It serves as a robust backend for handling high-volume toll traffic data efficiently.
+| Field | Details |
+| :--- | :--- |
+| **Project Name** | E-Toll Collection System (ETCS) |
+| **Trainee Name** | **Nakibul Islam Fahim** |
+| **Trainee ID** | **1294701** |
+| **Batch ID** | **WADA/PNTL-M/69/01** |
+| **Submission Date** | 31st December 2025 |
 
-### Key Features
-* **Normalized Schema:** Designed up to 3NF to ensure data integrity and reduce redundancy.
-* **Automated Auditing:** Uses triggers to automatically log administrative actions (e.g., adding new plazas) into audit tables.
-* **Complex Views:** Secure views with encryption and schema binding to abstract complex joins for reporting revenue and driver history.
-* **Advanced Logic:** Implements Stored Procedures for safe data entry and User-Defined Functions (UDFs) for dynamic tax calculations.
+## 📂 Repository Structure
 
-## 🛠️ Tech Stack
+* **`E-Toll_MS_DDL.sql`**: (Data Definition Language) Contains the scripts to create the database, tables, relationships, views, stored procedures, functions, and triggers.
+* **`E-Toll_MS_DML.sql`**: (Data Manipulation Language) Contains scripts for inserting dummy data, executing stored procedures, and running testing queries.
+* **`Case Study.pdf`**: Detailed documentation of the project requirements and design.
 
-* **Database:** Microsoft SQL Server 2019+
-* **Language:** T-SQL (Transact-SQL)
-* **Tools:** SSMS (SQL Server Management Studio)
+## 🚀 Project Overview
 
-## 📂 Database Schema
+The ETCS database automates the core functions of toll plazas. It handles vehicle tracking, automated fee calculation based on vehicle type (Heavy/Light), and revenue management. It serves as a backend for handling high-volume traffic data efficiently while maintaining strict data integrity.
+
+### Key Features Implemented
+
+* **Advanced Normalization:** Schema designed up to 3NF using lookup tables (`VehicleType`, `PaymentType`, `Designation`).
+* **Security & Schemas:** Implements a custom `HR` schema for employee data and uses `WITH ENCRYPTION` and `SCHEMABINDING` for sensitive Views.
+* **Automated Auditing:** Uses **AFTER Triggers** (`trg_AfterPlazaInsert`) to automatically log administrative actions into an audit table.
+* **Smart Data Entry:** Uses **INSTEAD OF Triggers** on Views (`trg_InsteadOfInsertDriverHistory`) to handle complex insertions securely.
+* **Error Handling:** Stored Procedures utilize `TRY...CATCH` blocks to gracefully handle errors during transaction processing.
+* **Reporting Logic:** Includes Scalar Functions (`fn_CalculateTax`) for tax logic and Table-Valued Functions (`fn_GetVehiclesByType`) for filtering data.
+
+## 🗄️ Database Schema
 
 The database consists of **11 primary tables** organized into logical groups:
 
 1.  **Infrastructure:** `Plaza`, `Location`, `PlazaLanes`
-2.  **Personnel:** `HR.Employees`, `Driver`, `Designation`
-3.  **Assets & Pricing:** `Vehicles`, `VehicleType`, `TollTicket`, `PaymentType`
-4.  **Operations:** `Transactions` (Central fact table)
+2.  **Personnel (HR Schema):** `HR.Employees`, `Designation`
+3.  **Fleet Management:** `Driver`, `Vehicles`
+4.  **Financials:** `TollTicket` (Pricing), `PaymentType`, `Transactions`
+5.  **Logs:** `PlazaAudit`
 
-## 🚀 Installation & Usage
+## 🛠 Installation & Usage
 
 1.  **Clone the Repository:**
     ```bash
-    git clone [https://github.com/YourUsername/E-Toll-Collection-System-SQL.git](https://github.com/nifahim4/E-Toll-Collection-System-SQL.git)
+    git clone [https://github.com/nifahim4/E-Toll-Collection-System-SQL.git](https://github.com/nifahim4/E-Toll-Collection-System-SQL.git)
     ```
-2.  **Open the Script:**
-    Open the file `E-Toll_MS_DDL.sql` in SQL Server Management Studio (SSMS).
+2.  **Open the DDL Script:**
+    Open `E-Toll_MS_DDL.sql` in SQL Server Management Studio (SSMS).
 3.  **Configure Paths:**
-    * Find the `CREATE DATABASE` section at the top of the script.
-    * Update the `FILENAME` paths to match your local machine's folder structure (e.g., `C:\SQLData\`).
-4.  **Execute:**
-    Run the script to build the entire database, including all tables, views, and procedures.
+    Find the `CREATE DATABASE` section. Update the `FILENAME` paths to match your local machine:
+    ```sql
+    FILENAME = 'C:\Your_Path\ETCS_Data.mdf',
+    ```
+4.  **Execute Scripts:**
+    1.  Run `E-Toll_MS_DDL.sql` first to build the structure.
+    2.  Run `E-Toll_MS_DML.sql` second to populate it with sample data and test the queries.
 
-## 📝 Code Highlights
+## 💻 Code Highlights
 
-### Stored Procedures
-Pre-compiled routines to handle repetitive tasks securely.
+### Secure Stored Procedure with Error Handling
 ```sql
--- Example: Registering a new vehicle
-EXEC sp_InsertVehicle 
-    @RegNo = 'DHK-MET-1234', 
-    @TypeID = 1, 
-    @Model = 'Toyota Corolla', 
-    @Color = 'White', 
-    @DriverID = 101;
+CREATE PROCEDURE sp_InsertTransactionMsg
+    @VehicleRegNo VARCHAR(30),
+    @DriverID INT,
+    @PlazaID INT,
+    @TicketCode INT,
+    @AmountPaid MONEY,
+    @PaymentTypeID INT
+AS
+BEGIN
+    BEGIN TRY
+        INSERT INTO Transactions (...) VALUES (...);
+        PRINT 'Transaction successful.';
+    END TRY
+    BEGIN CATCH
+        PRINT 'Error: ' + ERROR_MESSAGE();
+    END CATCH
+END
