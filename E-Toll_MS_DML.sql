@@ -122,10 +122,22 @@ VALUES
 ('Nofayel', 'Ahmed', 'DL-1004', '01800000000', 'Narayanganj'),
 ('Mohammed','Rami', 'DL-1006', '01900000000', 'Chadpur'),
 ('Ahsan', 'Hafeez', 'DL-1007', '01600000000', 'Satkhira'),
+('Nazmun', 'Nahar', 'DL-1009', '01400000000', 'Barisal'),
+('Bayzid', 'Antu', 'DL-1010', '01300000000', 'Barisal'),
+('Soyti','Akhter', 'DL-1011', '01200000000', 'Rongpur'),
+('Sijan', 'Shahariyar', 'DL-1002', '01100000000', 'Pabna'),
+('Atikur', 'Rahman', 'DL-1003', '01000000000', 'Pabna'),
+('Arafat','Rion', 'DL-1014', '01912345678', 'Feni'),
+('Naimul', 'Hasan', 'DL-1015', '01887654321', 'Noyakhali'),
+('Shamsul', 'Arefin', 'DL-1016', '01756789012', 'Barishal'),
+('Tajmin', 'Akhtar', 'DL-1017', '01634567890', 'Dinajpur'),
 ('Eshan', 'Ul-Karim', 'DL-1008', '01500000000', 'Barisal'),
+('Noor','Labib', 'DL-1019', '01412345678', 'Khulna'),
+('Sayedul', 'Islam', 'DL-1020', '01387654321', 'Rajshahi'),
+('Abu', 'Bakkar', 'DL-1021', '01256789012', 'Noyakhali'),
 ('Salam', 'Khan', 'DL-1001', '01811111111', 'Dhaka'),
-('Barkat', 'Hossain', 'DL-1002', '01822222222', 'Comilla'),
-('Rafiq', 'Islam', 'DL-1003', '01833333333', 'Chittagong');
+('Barkat', 'Hossain', 'DL-1022', '01822222222', 'Comilla'),
+('Rafiq', 'Islam', 'DL-1033', '01833333333', 'Chittagong');
 GO
 
 -- 8. Vehicles
